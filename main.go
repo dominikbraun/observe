@@ -29,9 +29,8 @@ func main() {
 			}
 
 			ctx.settings = settings
-			ctx.url = args[0]
 
-			return run(&ctx, os.Stdout)
+			return observeWebsite(&ctx, args[0], os.Stdout)
 		},
 	}
 

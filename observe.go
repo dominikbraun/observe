@@ -12,26 +12,28 @@ import (
 )
 
 type context struct {
-	url          string
 	settings     *Settings
 	interval     uint
 	quitOnChange bool
 }
 
-func run(ctx *context, out io.Writer) error {
+func observeWebsite(ctx *context, url string, out io.Writer) error {
 	var lastChecksum []byte
 
 	for quit := false; !quit; {
 		timer := time.NewTimer(time.Second * time.Duration(ctx.interval))
 		<-timer.C
 
-		checksum, err := getChecksum(ctx.url)
+		checksum, err := getChecksum(url)
 		if err != nil {
 			return err
 		}
 
 		if lastChecksum != nil && bytes.Compare(checksum, lastChecksum) != 0 {
-			if err := sendNotificationMail(ctx); err != nil {
+			err := sendNotificationMail(ctx, func() string {
+				return fmt.Sprintf("An observed website has changed: %s", url)
+			})
+			if err != nil {
 				return err
 			}
 			quit = ctx.quitOnChange
@@ -59,12 +61,12 @@ func getChecksum(url string) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-func sendNotificationMail(ctx *context) error {
+func sendNotificationMail(ctx *context, mailBody func() string) error {
 	from := &mail.Email{Address: ctx.settings.Mail.From}
 	to := &mail.Email{Address: ctx.settings.Mail.To}
 
-	subject := fmt.Sprintf("Observed website change: %s", ctx.url)
-	body := fmt.Sprintf("Website changed: %s\n", ctx.url)
+	subject := fmt.Sprintf("observe: An observed object has changed")
+	body := mailBody()
 
 	client := sendgrid.NewSendClient(ctx.settings.Sendgrid.Key)
 	_, err := client.Send(mail.NewSingleEmail(from, subject, to, body, body))
