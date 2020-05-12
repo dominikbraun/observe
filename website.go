@@ -18,7 +18,7 @@ type context struct {
 	quitOnChange bool
 }
 
-func run(ctx *context, out io.Writer) error {
+func observeWebsite(ctx *context, out io.Writer) error {
 	var lastChecksum []byte
 
 	for quit := false; !quit; {

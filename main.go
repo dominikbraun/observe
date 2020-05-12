@@ -12,6 +12,7 @@ func main() {
 
 	root := &cobra.Command{
 		Use:     "observe <url> <settings path>",
+		Short:   `Observe a website and get an e-mail if something changes.`,
 		Version: version,
 		Args:    cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -20,8 +21,9 @@ func main() {
 	}
 
 	website := &cobra.Command{
-		Use:  "website <url> <settings path>",
-		Args: cobra.ExactArgs(2),
+		Use:   "website <url> <settings path>",
+		Short: `Observe a website`,
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			settings, err := readSettings(args[1])
 			if err != nil {
@@ -31,12 +33,12 @@ func main() {
 			ctx.settings = settings
 			ctx.url = args[0]
 
-			return run(&ctx, os.Stdout)
+			return observeWebsite(&ctx, os.Stdout)
 		},
 	}
 
-	root.PersistentFlags().UintVarP(&ctx.interval, "interval", "i", 1, `The interval for checks`)
-	root.PersistentFlags().BoolVarP(&ctx.quitOnChange, "quit-on-change", "q", false, `Stop observing after a change`)
+	root.PersistentFlags().UintVarP(&ctx.interval, "interval", "i", 1, `interval for checks`)
+	root.PersistentFlags().BoolVarP(&ctx.quitOnChange, "quit-on-change", "q", false, `stop observing after a change`)
 	root.AddCommand(website)
 
 	if err := root.Execute(); err != nil {
