@@ -1,0 +1,164 @@
+#
+# observe CircleCI 2.1 Configuration
+#
+# This CI pipeline is capable of validating the code, running unit
+# tests and - if the workflow has been triggered by a tag - building
+# binaries for all supported platforms, creating a GitHub release as
+# well as publishing a corresponding Docker image to Docker Hub.
+#
+version: 2.1
+
+executors:
+  go-container:
+    docker:
+      - image: circleci/golang:1.13
+        environment:
+          CGO_ENABLED: 0
+          G111MODULE: "on"
+
+jobs:
+  observe-test:
+    executor: go-container
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+            - dependency-cache-v1-{{ .Branch }}-
+            - dependency-cache-v1-
+            - repository-cache-v1-{{ .Branch }}-{{ .Revision }}
+            - repository-cache-v1-{{ .Branch }}-
+            - repository-cache-v1-
+      - run: go mod download
+      - save_cache:
+          key: dependency-cache-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg
+      - save_cache:
+          key: repository-cache-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - run:
+          name: Check Go format
+          command: "! go fmt ./... | read"
+      - run:
+          name: Run all tests
+          command: go test -v ./...
+
+  observe-build-releases:
+    executor: go-container
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - dependency-cache-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+            - dependency-cache-v1-{{ .Branch }}-
+            - dependency-cache-v1-
+            - repository-cache-v1-{{ .Branch }}-{{ .Revision }}
+            - repository-cache-v1-{{ .Branch }}-
+            - repository-cache-v1-
+      - run: go mod download
+      - save_cache:
+          key: dependency-cache-v1-{{ .Branch }}-{{ checksum "go.mod" }}
+          paths:
+            - /go/pkg
+      - save_cache:
+          key: repository-cache-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - run: mkdir -p /tmp/artifacts
+      - run:
+          name: Build and pack observe for Linux
+          command: |
+            GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o .target/observe main.go
+            cp .target/observe observe
+            tar -czf /tmp/artifacts/observe-linux-amd64.tar.gz observe
+      - run:
+          name: Build and pack observe for macOS
+          command: |
+            GOOS=darwin GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o .target/observe main.go
+            cp .target/observe observe
+            tar -czf /tmp/artifacts/observe-macos-amd64.tar.gz observe
+      - run:
+          name: Build and pack observe for Windows
+          command: |
+            GOOS=windows GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o .target/observe.exe main.go
+            cp .target/observe.exe observe.exe
+            zip /tmp/artifacts/observe-windows-amd64.zip observe.exe
+      - persist_to_workspace:
+          root: /tmp/artifacts
+          paths:
+            - observe-linux-amd64.tar.gz
+            - observe-macos-amd64.tar.gz
+            - observe-windows-amd64.zip
+
+  observe-release-gh:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: /tmp/artifacts
+      - run: mkdir artifacts && cp /tmp/artifacts/* artifacts/
+      - run:
+          name: Publish GitHub release
+          command: |
+            ghr -t "${GITHUB_TOKEN}" \
+                -u "${CIRCLE_PROJECT_USERNAME}" \
+                -r "${CIRCLE_PROJECT_REPONAME}" \
+                -c "${CIRCLE_SHA1}" \
+                -delete "${CIRCLE_TAG}" \
+                artifacts/
+  observe-release-docker:
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Log in to Docker Hub
+          command: |
+            echo ${DOCKER_PASS} | docker login --username ${DOCKER_USER} --password-stdin
+      - run:
+          name: Build the Docker image (Light)
+          command: |
+            docker image build --build-arg VERSION=${CIRCLE_TAG} -t dominikbraun/observe:${CIRCLE_TAG} .
+      - run:
+          name: Tag the Docker image (Light) as latest
+          command: |
+            docker image tag dominikbraun/observe:${CIRCLE_TAG} dominikbraun/observe:latest
+      - run:
+          name: Publish the Docker images (Light)
+          command: |
+            docker push dominikbraun/observe:${CIRCLE_TAG}
+            docker push dominikbraun/observe:latest
+workflows:
+  version: 2
+  observe-ci:
+    jobs:
+      - observe-test:
+          filters:
+            tags:
+              only: /.*/
+      - observe-build-releases:
+          requires:
+            - observe-test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - observe-release-gh:
+          requires:
+            - observe-build-releases
+          filters:
+            tags:
+              only: /.*/
+      - observe-release-docker:
+          requires:
+            - observe-release-gh
+          filters:
+            tags:
+              only: /.*/
