@@ -71,21 +71,21 @@ jobs:
           name: Build and pack observe for Linux
           command: |
             GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o .target/observe main.go
+              -o .target/observe .
             cp .target/observe observe
             tar -czf /tmp/artifacts/observe-linux-amd64.tar.gz observe
       - run:
           name: Build and pack observe for macOS
           command: |
             GOOS=darwin GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o .target/observe main.go
+              -o .target/observe .
             cp .target/observe observe
             tar -czf /tmp/artifacts/observe-macos-amd64.tar.gz observe
       - run:
           name: Build and pack observe for Windows
           command: |
             GOOS=windows GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o .target/observe.exe main.go
+              -o .target/observe.exe .
             cp .target/observe.exe observe.exe
             zip /tmp/artifacts/observe-windows-amd64.zip observe.exe
       - persist_to_workspace:
