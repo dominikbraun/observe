@@ -2,19 +2,21 @@ package main
 
 import "github.com/spf13/viper"
 
+const settingsFilename string = "settings"
+
 type Settings struct {
 	Mail struct {
-		From string `json:"from"`
-		To   string `json:"to"`
-	} `json:"mail"`
+		From string
+		To   string
+	}
 	Sendgrid struct {
-		Key string `json:"key"`
-	} `json:"sendgrid"`
+		Key string
+	}
 }
 
-func readSettings(path, filename string) (*Settings, error) {
+func readSettings(path string) (*Settings, error) {
 	var settings Settings
-	viper.SetConfigName(filename)
+	viper.SetConfigName(settingsFilename)
 	viper.AddConfigPath(path)
 
 	if err := viper.ReadInConfig(); err != nil {

@@ -1,3 +1,6 @@
 # Editor directories
 .idea
 .vscode
+
+# observe test settings
+settings.yml

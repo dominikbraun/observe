@@ -13,16 +13,16 @@ import (
 
 type context struct {
 	url          string
-	interval     time.Duration
-	quitOnChange bool
 	settings     *Settings
+	interval     uint
+	quitOnChange bool
 }
 
 func run(ctx *context, out io.Writer) error {
 	var lastChecksum []byte
 
 	for quit := false; !quit; {
-		timer := time.NewTimer(time.Second * ctx.interval)
+		timer := time.NewTimer(time.Second * time.Duration(ctx.interval))
 		<-timer.C
 
 		checksum, err := getChecksum(ctx.url)
@@ -56,9 +56,7 @@ func getChecksum(url string) ([]byte, error) {
 	}
 	_ = resp.Body.Close()
 
-	checksum := hash.Sum(nil)
-
-	return checksum, nil
+	return hash.Sum(nil), nil
 }
 
 func sendNotificationMail(ctx *context) error {
@@ -66,7 +64,7 @@ func sendNotificationMail(ctx *context) error {
 	to := &mail.Email{Address: ctx.settings.Mail.To}
 
 	subject := fmt.Sprintf("Observed website change: %s", ctx.url)
-	body := fmt.Sprintf("Website changed: %s", ctx.url)
+	body := fmt.Sprintf("Website changed: %s\n", ctx.url)
 
 	client := sendgrid.NewSendClient(ctx.settings.Sendgrid.Key)
 	_, err := client.Send(mail.NewSingleEmail(from, subject, to, body, body))
