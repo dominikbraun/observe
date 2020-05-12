@@ -156,9 +156,9 @@ workflows:
           filters:
             tags:
               only: /.*/
-#      - observe-release-docker:
-#          requires:
-#            - observe-release-gh
-#          filters:
-#            tags:
-#              only: /.*/
+      - observe-release-docker:
+          requires:
+            - observe-release-gh
+          filters:
+            tags:
+              only: /.*/
