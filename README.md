@@ -1,8 +1,4 @@
-# observe
-[![CircleCI](https://circleci.com/gh/dominikbraun/observe.svg?style=shield)](https://circleci.com/gh/dominikbraun/observe)
-[![Go Report Card](https://goreportcard.com/badge/github.com/dominikbraun/observe)](https://goreportcard.com/report/github.com/dominikbraun/observe)
-[![GitHub release](https://img.shields.io/github/v/release/dominikbraun/observe?include_prereleases&sort=semver)](https://github.com/dominikbraun/observe/releases)
-[![License](https://img.shields.io/github/license/dominikbraun/observe)](https://github.com/dominikbraun/observe/blob/master/LICENSE)
+# observe [![CircleCI](https://circleci.com/gh/dominikbraun/observe.svg?style=shield)](https://circleci.com/gh/dominikbraun/observe) [![Go Report Card](https://goreportcard.com/badge/github.com/dominikbraun/observe)](https://goreportcard.com/report/github.com/dominikbraun/observe) [![GitHub release](https://img.shields.io/github/v/release/dominikbraun/observe?include_prereleases&sort=semver)](https://github.com/dominikbraun/observe/releases) [![License](https://img.shields.io/github/license/dominikbraun/observe)](https://github.com/dominikbraun/observe/blob/master/LICENSE)
 
 ---
 
