@@ -18,6 +18,16 @@ $ observe website https://example-event.com .
 
 That's it! You'll get notified via e-mail as soon as something changes.
 
+## Installation
+
+**Linux/macOS:** Download the [latest release](https://github.com/dominikbraun/observe/releases) and move the binary into
+a directory like `/usr/local/bin`. Make sure the directory is in your `PATH`.
+
+**Windows:** Download the [latest release](https://github.com/dominikbraun/observe/releases), create a directory like
+`C:\Program Files\observe` and copy the executable into it. [Add the directory to `Path`](https://www.computerhope.com/issues/ch000549.htm).
+
+**Docker:** Run `docker image pull dominikbraun/observe` to get the Docker image.
+
 ## Getting started
 
 ### Prerequisites
@@ -36,16 +46,6 @@ sendgrid:
 
 If your mail provider does not allow `from` being the same address as `to` for security reasons, you may use a fake
 address or your second e-mail address as sender.
-
-### Installation
-
-**Linux/macOS:** Download the [latest release](https://github.com/dominikbraun/observe/releases) and move the binary into
-a directory like `/usr/local/bin`. Make sure the directory is in your `PATH`.
-
-**Windows:** Download the [latest release](https://github.com/dominikbraun/observe/releases), create a directory like
-`C:\Program Files\observe` and copy the executable into it. [Add the directory to `Path`](https://www.computerhope.com/issues/ch000549.htm).
-
-**Docker:** Run `docker image pull dominikbraun/observe` to get the Docker image.
 
 ### Starting an observation
 
