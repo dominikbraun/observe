@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"log"
 	"os"
 )
 
@@ -39,6 +40,6 @@ func main() {
 	root.AddCommand(website)
 
 	if err := root.Execute(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

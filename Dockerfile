@@ -28,5 +28,7 @@ LABEL org.label-schema.docker.cmd="docker container run -v $(pwd):/settings domi
 COPY --from=download ["/bin/observe", "/bin/observe"]
 
 RUN mkdir /settings
+WORKDIR /settings
 
 ENTRYPOINT ["/bin/observe"]
+CMD [""]
