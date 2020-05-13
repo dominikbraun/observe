@@ -17,6 +17,9 @@ executors:
           G111MODULE: "on"
 
 jobs:
+
+  # Runs all observe unit tests and checks if the code has been formatted
+  # properly using `gofmt`.
   observe-test:
     executor: go-container
     steps:
@@ -45,6 +48,8 @@ jobs:
           name: Run all tests
           command: go test -v ./...
 
+  # Builds the observe binaries for all platforms, stores them under
+  # /tmp/artifacts and persists that directory to the workspace.
   observe-build-releases:
     executor: go-container
     steps:
@@ -95,6 +100,9 @@ jobs:
             - observe-macos-amd64.tar.gz
             - observe-windows-amd64.zip
 
+  # Creates a new GitHub release using ${CIRCLE_TAG} as release version.
+  # The release contains all artifacts that have been stored under
+  # /tmp/artifacts before.
   observe-release-gh:
     docker:
       - image: cibuilds/github:0.10
@@ -111,6 +119,13 @@ jobs:
                 -c "${CIRCLE_SHA1}" \
                 -delete "${CIRCLE_TAG}" \
                 artifacts/
+
+  # Creates a new Docker Hub release using ${CIRCLE_TAG} as release
+  # version. All Docker Hub credentials have to be set in the project.
+  #
+  # The image build assumes that there's a GitHub release with the
+  # ${CIRCLE_TAG} version available to download since the build won't
+  # copy project files but uses the released binary instead.
   observe-release-docker:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -134,6 +149,7 @@ jobs:
           command: |
             docker push dominikbraun/observe:${CIRCLE_TAG}
             docker push dominikbraun/observe:latest
+
 workflows:
   version: 2
   observe-ci:
