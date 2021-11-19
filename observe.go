@@ -5,11 +5,17 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/faiface/beep"
+	"github.com/faiface/beep/mp3"
+	"github.com/faiface/beep/speaker"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
-	"io"
-	"net/http"
-	"time"
 )
 
 // context represents an observation context. It holds information
@@ -38,12 +44,7 @@ func observeWebsite(ctx *context, url string, out io.Writer) error {
 		// If the last checksum has already been set and the new
 		// checksum doesn't match the old one, the website changed.
 		if lastChecksum != nil && bytes.Compare(checksum, lastChecksum) != 0 {
-			err := sendNotificationMail(ctx, func() string {
-				return fmt.Sprintf(`An observed website has changed: %s`, url)
-			})
-			if err != nil {
-				return err
-			}
+			alarm()
 			// Quit the observation if `--quit-on-change` has been set.
 			quit = ctx.quitOnChange
 		}
@@ -71,6 +72,28 @@ func getChecksum(url string) ([]byte, error) {
 	_ = resp.Body.Close()
 
 	return hash.Sum(nil), nil
+}
+
+func alarm() {
+	f, err := os.Open("alarm.mp3")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	streamer, format, err := mp3.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer streamer.Close()
+
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	done := make(chan bool)
+	speaker.Play(beep.Seq(streamer, beep.Callback(func() {
+		done <- true
+	})))
+
+	<-done
 }
 
 // sendNotificationMail sends an e-mail to the user indicating that an

@@ -2,9 +2,10 @@
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"log"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 // version is used for general version information. It can be set when
@@ -32,12 +33,12 @@ func main() {
 		Use:  "website <url> <settings path>",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			settings, err := readSettings(args[1])
+			/*settings, err := readSettings(args[1])
 			if err != nil {
 				return err
 			}
 
-			ctx.settings = settings
+			ctx.settings = settings*/
 
 			return observeWebsite(&ctx, args[0], os.Stdout)
 		},

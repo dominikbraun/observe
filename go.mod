@@ -3,6 +3,7 @@ module github.com/dominikbraun/observe
 go 1.13
 
 require (
+	github.com/faiface/beep v1.1.0 // indirect
 	github.com/mitchellh/cli v1.1.1
 	github.com/sendgrid/rest v2.4.1+incompatible // indirect
 	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
